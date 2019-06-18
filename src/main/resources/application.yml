@@ -1,0 +1,21 @@
+server:
+  port: 8889
+
+security:
+  oauth2:
+    resource:
+      token-info-uri: http://localhost:8888/oauth/check_token
+    client:
+      access-token-uri: http://localhost:8888/oauth/token
+      client-id: client
+      client-secret: secret
+      grant-type: password
+      scope: web
+    authorization:
+      check-token-access: http://localhost:8888/oauth/check_token
+
+logging:
+  level:
+    org:
+      springframework:
+        security: debug
