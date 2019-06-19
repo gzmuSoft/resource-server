@@ -1,0 +1,12 @@
+= resource-server
+Doc Writer EchoCow <https://echocow.cn>
+v1.0, 2019-06-19
+:toc:
+
+== 简述
+
+这是一个资源服务器的 demo，授权服务器见 https://github.com/gzmuSoft/authorization-server[authorization-server]
+
+核心类配置： `cn.edu.gzmu.resource.config.OAuth2ResourceServerConfig`
+
+获取用户信息： `cn.edu.gzmu.resource.TestController`
