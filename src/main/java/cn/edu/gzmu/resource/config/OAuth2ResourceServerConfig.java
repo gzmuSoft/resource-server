@@ -4,19 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.jwt.crypto.sign.RsaVerifier;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -34,19 +30,22 @@ import java.util.Map;
 public class OAuth2ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
     private final ResourceServerProperties resourceServerProperties;
+    private final RemoteTokenServices remoteTokenServices;
+
 
     private static final String DEMO_RESOURCE_ID = "resource";
 
-    public OAuth2ResourceServerConfig(ResourceServerProperties resourceServerProperties) {
+    public OAuth2ResourceServerConfig(ResourceServerProperties resourceServerProperties, RemoteTokenServices remoteTokenServices) {
         this.resourceServerProperties = resourceServerProperties;
+        this.remoteTokenServices = remoteTokenServices;
     }
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
+        remoteTokenServices.setAccessTokenConverter(jwtAccessTokenConverter());
         resources.resourceId(DEMO_RESOURCE_ID).stateless(true)
-                .tokenServices(tokenServices());
+                .tokenServices(remoteTokenServices);
     }
-
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -57,29 +56,16 @@ public class OAuth2ResourceServerConfig extends ResourceServerConfigurerAdapter 
     }
 
     @Bean
-    public TokenStore tokenStore() {
-        return new JwtTokenStore(jwtAccessTokenConverter());
-    }
-
-    @Bean
     public JwtAccessTokenConverter jwtAccessTokenConverter() {
         JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
         converter.setVerifierKey(getPubKey());
         return converter;
     }
 
-    @Bean
-    @Primary
-    public DefaultTokenServices tokenServices() {
-        DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-        defaultTokenServices.setTokenStore(tokenStore());
-        return defaultTokenServices;
-    }
-
     private String getPubKey() {
-       return StringUtils.isEmpty(resourceServerProperties.getJwt().getKeyValue())
-               ? getKeyFromAuthorizationServer()
-               : resourceServerProperties.getJwt().getKeyValue();
+        return StringUtils.isEmpty(resourceServerProperties.getJwt().getKeyValue())
+                ? getKeyFromAuthorizationServer()
+                : resourceServerProperties.getJwt().getKeyValue();
     }
 
     private String getKeyFromAuthorizationServer() {
