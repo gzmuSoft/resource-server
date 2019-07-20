@@ -18,6 +18,7 @@ security:
           awIDAQAB
           -----END PUBLIC KEY-----
         key-uri: http://localhost:8888/oauth/token_key
+      id: resource
     client:
       access-token-uri: http://localhost:8888/oauth/token
       client-id: client

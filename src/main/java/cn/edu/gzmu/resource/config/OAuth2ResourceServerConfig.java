@@ -35,25 +35,14 @@ public class OAuth2ResourceServerConfig extends ResourceServerConfigurerAdapter 
 
     private final ResourceServerProperties resourceServerProperties;
 
-    private static final String DEMO_RESOURCE_ID = "resource";
-
     public OAuth2ResourceServerConfig(ResourceServerProperties resourceServerProperties) {
         this.resourceServerProperties = resourceServerProperties;
     }
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
-        resources.resourceId(DEMO_RESOURCE_ID).stateless(true)
+        resources.resourceId(resourceServerProperties.getResourceId())
                 .tokenServices(tokenServices());
-    }
-
-
-    @Override
-    public void configure(HttpSecurity http) throws Exception {
-        http
-                .antMatcher("/user/**")
-                .authorizeRequests()
-                .anyRequest().authenticated();
     }
 
     @Bean
